@@ -12,30 +12,51 @@ var storage = multer.diskStorage({
    }
 });*/
 
-async function getrfps(/*page = 1*/) {
+ async function getrfps(/*page = 1*/){
   /*const offset = helper.getOffset(page, config.listPerPage);*/
   var getrfpquery = `SELECT id, rfpId, category, subcategory, releaseDate, closureDate, document, quantity, bidDate, rfpCost, rfpStatus, details FROM ( SELECT * FROM ( SELECT * FROM rfp WHERE delflag = 'N' ) RFP INNER JOIN( SELECT id AS CATID, category FROM category )CATEGORIES ON RFP.categories = CATEGORIES.CATID )RFPCATS INNER JOIN( SELECT id AS SUBCATID, subcategory FROM subcategory )SUBCATS ON RFPCATS.subcategories = SUBCATS.SUBCATID`;
-  //   var getrfpquery = `SELECT id, rfpId, vendor, VID AS vendorId, company, category, subcategory, releaseDate, closureDate, document, quantity, bidDate, rfpCost, rfpStatus, details FROM ( SELECT * FROM ( SELECT * FROM ( SELECT * FROM ( SELECT * FROM rfp WHERE delflag = 'N' ) RFP INNER JOIN( SELECT id AS CATID, category FROM category ) CATEGORIES ON RFP.categories = CATEGORIES.CATID ) RFPCATS INNER JOIN( SELECT id AS SUBCATID, subcategory FROM subcategory ) SUBCATS ON RFPCATS.subcategories = SUBCATS.SUBCATID ) RFPDETAILS INNER JOIN( SELECT vendorId, rfpId AS RID, participationStatus, notParticipationReason FROM rfpvendors ) RFPVENDORS ON RFPDETAILS.id = RFPVENDORS.RID ) RVENDORS INNER JOIN( SELECT vendor, id AS VID, company FROM vendors ) VENDORDETAILS ON RVENDORS.vendorId = VENDORDETAILS.VID`;
-
-  const rows = await db.query(
-    getrfpquery
+ 
+  /*var getrfpquery = `SELECT id, rfpId, vendor, VID AS vendorId, company, category, subcategory, releaseDate, closureDate, document, quantity, bidDate, rfpCost, rfpStatus, details FROM ( SELECT * FROM ( SELECT * FROM ( SELECT * FROM ( SELECT * FROM rfp WHERE delflag = 'N' ) RFP INNER JOIN( SELECT id AS CATID, category FROM category ) CATEGORIES ON RFP.categories = CATEGORIES.CATID ) RFPCATS INNER JOIN( SELECT id AS SUBCATID, subcategory FROM subcategory ) SUBCATS ON RFPCATS.subcategories = SUBCATS.SUBCATID ) RFPDETAILS INNER JOIN( SELECT vendorId, rfpId AS RID, participationStatus, notParticipationReason FROM rfpvendors ) RFPVENDORS ON RFPDETAILS.id = RFPVENDORS.RID ) RVENDORS INNER JOIN( SELECT vendor, id AS VID, company FROM vendors ) VENDORDETAILS ON RVENDORS.vendorId = VENDORDETAILS.VID`;*/
+  
+  const rows = await db.query(getrfpquery
     /*`SELECT * FROM rfp LIMIT ${offset},${config.listPerPage}`*/
   );
-  const data = helper.emptyOrRows(rows);
-  /* const meta = {page};*/
-  if (!rows) {
-    let status = 500;
-    let message = "No Data Found";
-  } else {
-    status = 200;
-    message = "Data fetched Successfully";
-  }
 
+  
+ 
+  var data = helper.emptyOrRows(rows);
+ /* const meta = {page};*/
+	if (!rows) 
+	{
+	   let status = 500;
+  	   let message = 'No Data Found';
+	}
+	else
+	{
+		
+		var i = 0
+			var dataarr = [];
+			
+			for (i = 0 ; i < data.length; i++) {
+				
+  var rfpVendors = `SELECT vendor,VNID AS vendorId, company FROM ( SELECT * FROM ( SELECT * FROM ( SELECT * FROM ( SELECT * FROM rfpvendors WHERE rfpId = '${data[i].id}' ) RFPVENDOR INNER JOIN( SELECT id AS VNID, vendor, company FROM vendors WHERE delflag = 'N' ) VENDORS ON RFPVENDOR.vendorId = VENDORS.VNID ) VNDRRFP INNER JOIN( SELECT id AS rID, rfpId AS RfpTID, categories, subcategories, releaseDate, closureDate, document, quantity, bidDate, rfpCost, rfpStatus, details FROM rfp ) RFP ON VNDRRFP.rfpId = RFP.rID ) RFPDETAILS INNER JOIN( SELECT id AS CATID, category FROM category ) CATEGORIES ON RFPDETAILS.categories = CATEGORIES.CATID ) RFPCATS INNER JOIN( SELECT id AS SUBCATID, subcategory FROM subcategory ) SUBCATS ON RFPCATS.subcategories = SUBCATS.SUBCATID`;
+			const vendorrows = await db.query(rfpVendors);
+  			const vendorrowsdata = helper.emptyOrRows(vendorrows);
+  			
+  			data[i].vendors = vendorrowsdata; 
+	
+};
+
+		status = 200;
+  	    message = 'Data fetched Successfully';
+	}
+	
   return {
-    status,
-    message,
-    data,
-  };
+  	status,
+  	message,
+    data
+   
+  }
 }
 
 async function getrfpvendors(rfpid) {
