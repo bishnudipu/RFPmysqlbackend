@@ -43,4 +43,26 @@ router.get('/:id', async function(req, res, next) {
     next(err);
   }
 });
+
+router.post("/getbids", async function (req, res, next) {
+  try {
+    res.json(await rfp.getrfpBids(req));
+  } catch (err) {
+    console.error(`Error while getting rfp bids `, err.message);
+    next(err);
+  }
+});
+
+router.post("/createbids", async function (req, res, next) {
+  try {
+    res.json(await rfp.createbids(req));
+  } catch (err) {
+    console.error(`Error while creating Bid`, err.message);
+    next(err);
+  }
+});
+
+
+
+
 module.exports = router;
