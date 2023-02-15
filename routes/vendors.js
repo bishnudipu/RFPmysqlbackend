@@ -32,11 +32,29 @@ router.get("/rfpById", async function (req, res, next) {
   }
 });
 
-router.post("/updateVendorParticipation", async function (req, res, next) {
+router.post("/updateParticipationStatus", async function (req, res, next) {
   try {
-    res.json(await vendors.updateVendorParticipation(req));
+    res.json(await vendors.updateParticipationStatus(req));
   } catch (err) {
     console.error(`Error while Updating records `, err.message);
+    next(err);
+  }
+});
+
+router.get("/rfpBids", async function (req, res, next) {
+  try {
+    res.json(await vendors.getrfpBids(req.query.rfpId));
+  } catch (err) {
+    console.error(`Error while getting rfp bids `, err.message);
+    next(err);
+  }
+});
+
+router.get("/rfpBidsByVendor", async function (req, res, next) {
+  try {
+    res.json(await vendors.getrfpBidsByVendor(req));
+  } catch (err) {
+    console.error(`Error while getting rfp bids `, err.message);
     next(err);
   }
 });

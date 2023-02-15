@@ -3,16 +3,18 @@ const helper = require('../helper');
 const config = require('../config');
 
 async function getCategories(){
+	let status;
+  	let message;
   const rows = await db.query(
     `SELECT * FROM category WHERE delflag = 'N'`
   );
   const data = helper.emptyOrRows(rows);
 
 
-  	if (!rows) 
+  	if (!rows.length) 
 	{
-	   let status = 500;
-  	   let message = 'No Data Found';
+	    status = 500;
+  	    message = 'No Data Found';
 	}
 	else
 	{

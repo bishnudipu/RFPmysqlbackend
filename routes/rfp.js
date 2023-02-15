@@ -26,7 +26,7 @@ router.post('/', async function(req, res, next) {
 router.get('/rfpVendors', async function(req, res, next) {
   try {
   	
-    res.json(await rfp.getrfpvendors(req.query.RfpId));
+    res.json(await rfp.getrfpvendors(req.query.rfpId));
   } catch (err) {
     console.error(`Error while getting rfp vendors `, err.message);
     next(err);
@@ -44,20 +44,22 @@ router.get('/:id', async function(req, res, next) {
   }
 });
 
-router.post("/getbids", async function (req, res, next) {
-  try {
-    res.json(await rfp.getrfpBids(req));
-  } catch (err) {
-    console.error(`Error while getting rfp bids `, err.message);
-    next(err);
-  }
-});
+
 
 router.post("/createbids", async function (req, res, next) {
   try {
     res.json(await rfp.createbids(req));
   } catch (err) {
     console.error(`Error while creating Bid`, err.message);
+    next(err);
+  }
+});
+
+router.post("/updateRfpStatus", async function (req, res, next) {
+  try {
+    res.json(await rfp.updateRfpStatus(req));
+  } catch (err) {
+    console.error(`Error while Updating Status`, err.message);
     next(err);
   }
 });
