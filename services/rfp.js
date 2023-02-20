@@ -48,7 +48,9 @@ async function getrfpvendors(rfpid) {
 	let status ;
     let message ;
   /*const offset = helper.getOffset(page, config.listPerPage);*/
-  var getrfpquery = `SELECT RfpTID AS rfpId,vendor,VNID AS vendorId, company,category, subcategory, releaseDate, closureDate, document, quantity, bidDate, rfpCost, rfpStatus, details,  participationStatus, notParticipationReason FROM ( SELECT * FROM ( SELECT * FROM ( SELECT * FROM ( SELECT * FROM rfpvendors WHERE rfpId = '${rfpid}' ) RFPVENDOR INNER JOIN( SELECT id AS VNID, vendor, company FROM vendors WHERE delflag = 'N' ) VENDORS ON RFPVENDOR.vendorId = VENDORS.VNID ) VNDRRFP INNER JOIN( SELECT id AS rID, rfpId AS RfpTID, categories, subcategories, releaseDate, closureDate, document, quantity, bidDate, rfpCost, rfpStatus, details FROM rfp ) RFP ON VNDRRFP.rfpId = RFP.rID ) RFPDETAILS INNER JOIN( SELECT id AS CATID, category FROM category ) CATEGORIES ON RFPDETAILS.categories = CATEGORIES.CATID ) RFPCATS INNER JOIN( SELECT id AS SUBCATID, subcategory FROM subcategory ) SUBCATS ON RFPCATS.subcategories = SUBCATS.SUBCATID`;
+  var getrfpquery = `SELECT id As rfpVendorId, RfpTID AS rfpId, vendor, VNID AS vendorId, company, category, subcategory, releaseDate, closureDate, document, quantity, rfpReleaseDate, rfpCost, rfpStatus, rfpVendorStatus, details, participationStatus, notParticipationReason,bidPrice,bidCreateDate,bidDetails FROM ( SELECT * FROM ( SELECT * FROM ( SELECT * FROM ( SELECT * FROM ( SELECT * FROM rfpvendors ) RFPVENDOR INNER JOIN( SELECT id AS VNID, vendor, company FROM vendors WHERE delflag = 'N' ) VENDORS ON RFPVENDOR.vendorId = VENDORS.VNID ) VNDRRFP INNER JOIN( SELECT id AS rID, rfpId AS RfpTID, categories, subcategories, releaseDate, closureDate, document, quantity, bidDate AS rfpReleaseDate, rfpCost, rfpStatus, details FROM rfp WHERE rfpId = '${rfpid}' ) RFP ON VNDRRFP.rfpId = RFP.rID ) RFPDETAILS INNER JOIN( SELECT id AS CATID, category FROM category ) CATEGORIES ON RFPDETAILS.categories = CATEGORIES.CATID ) RFPCATS INNER JOIN( SELECT id AS SUBCATID, subcategory FROM subcategory ) SUBCATS ON RFPCATS.subcategories = SUBCATS.SUBCATID ) RFPVENDORDETAILS INNER JOIN( SELECT id AS bidId, vendorId AS VNDRID, rfpId AS RRRID, bidPrice, descrption AS bidDetails, created AS bidCreateDate FROM vendor_bids ) RFPBIDDETAILS ON RFPVENDORDETAILS.RfpTID = RFPBIDDETAILS.RRRID GROUP BY id;`;
+  
+
 
   const rows = await db.query(
     getrfpquery
@@ -61,7 +63,7 @@ async function getrfpvendors(rfpid) {
      message = "No Data Found";
   } else {
     status = 200;
-    message = "Data fetched Successfully";
+    message = "Data Fetched Successfully";
   }
 
   return {
@@ -154,12 +156,15 @@ async function createrfps(rfpDetails)
 
 async function createbids(bidDetails) {
  
-
-  let createbid = `INSERT INTO vendor_bids (vendorId, rfpId, bidPrice, descrption,created,delflag) VALUES ('${bidDetails.body.vendorId}', '${bidDetails.body.rfpId}', '${bidDetails.body.bidPrice}','${bidDetails.body.descrption}',NOW(),'N' )`;
-  const result = await db.query(createbid);
-  lastid = result.insertId;
   let status = 500;
   let bidId = "";
+
+  let createbid = `INSERT INTO vendor_bids (vendorId, rfpId, bidPrice, descrption,created,delflag) VALUES ('${bidDetails.body.vendorId}', '${bidDetails.body.rfpId}', '${bidDetails.body.bidPrice}','${bidDetails.body.details}',NOW(),'N' )`;
+  const result = await db.query(createbid);
+  lastid = result.insertId;
+  
+  
+
   let message = "Bid Placed Unsuccessful";
   if (result.affectedRows) {
     status = 200;
